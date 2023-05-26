@@ -1,0 +1,35 @@
+import telebot
+from pytube import YouTube
+
+# Replace 'YOUR_TELEGRAM_BOT_TOKEN' with your actual Telegram bot token
+bot = telebot.TeleBot('YOUR_TELEGRAM_BOT_TOKEN')
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Welcome to the YouTube video downloader bot!")
+
+@bot.message_handler(func=lambda message: True)
+def download_youtube_video(message):
+    video_url = message.text
+
+    try:
+        # Create a YouTube object
+        youtube = YouTube(video_url)
+
+        # Get the first video from the YouTube object
+        video = youtube.streams.first()
+
+        # Download the video
+        video.download()
+
+        # Get the video filename
+        video_filename = video.default_filename
+
+        # Send the video file to the user
+        bot.send_video(message.chat.id, open(video_filename, 'rb'))
+
+    except Exception as e:
+        bot.reply_to(message, "An error occurred while downloading the YouTube video.")
+
+# Start the bot
+bot.polling()
